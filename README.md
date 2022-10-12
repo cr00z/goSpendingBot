@@ -5,8 +5,8 @@
 Телеграмм-бот для контроля расходов
 
 <tr>
-    <td> <img src="images/screenshot1.jpg" alt="Demo" style="width: 540px;"/> </td>
-    <td> <img src="images/screenshot2.jpg" alt="Demo" style="width: 540px;"/> </td>
+    <td> <img src="images/screenshot1.jpg" alt="Demo" style="width: 350px;"/> </td>
+    <td> <img src="images/screenshot2.jpg" alt="Demo" style="width: 350px;"/> </td>
 </tr>
 
 

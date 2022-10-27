@@ -1,0 +1,20 @@
+pipelines:
+  file_to_graylog:
+    input:
+      type: file
+      persistence_mode: async
+      watching_dir: /app
+      filename_pattern: log.txt
+      offsets_file: /app/offsets.yaml
+      offsets_op: reset
+
+    actions:
+      - type: rename
+        msg: message
+        ts: time
+
+    output:
+      type: gelf
+      endpoint: "host.docker.internal:12201"
+      reconnect_interval: 5s
+      default_short_message_value: "message isn't provided"

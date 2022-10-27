@@ -1,0 +1,5 @@
+POSTGRES_HOST=gospend-db
+POSTGRES_DB=postgres
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=qwerty
+POSTGRES_SSLMODE=disable

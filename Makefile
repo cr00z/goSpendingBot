@@ -48,5 +48,37 @@ install-smartimports: bindir
 		(GOBIN=${BINDIR} go install github.com/pav5000/smartimports/cmd/smartimports@latest && \
 		mv ${BINDIR}/smartimports ${SMARTIMPORTS})
 
-docker-run:
-	sudo docker compose up
+# Docker
+
+bot:
+	cd build/bot && docker compose --env-file environment.dev up --build
+	# cd build/bot && sudo docker compose --env-file environment.dev up --build
+
+.PHONY: logs
+logs:
+	mkdir -p build/logs/data
+	chmod -R 777 build/logs/data
+	cd build/logs && docker compose up
+	# sudo chmod -R 777 build/logs/data
+	# cd build/logs && sudo docker compose up
+
+.PHONY: tracing
+tracing:
+	cd build/tracing && docker compose up
+	# cd build/tracing && sudo docker compose up
+
+.PHONY: metrics
+metrics:
+	mkdir -p build/metrics/data
+	chmod -R 777 build/metrics/data
+	cd build/metrics && docker compose up
+	# sudo chmod -R 777 build/metrics/data
+	# cd build/metrics && sudo docker compose up
+
+pull:
+	sudo docker pull prom/prometheus
+	sudo docker pull grafana/grafana-oss
+	sudo docker pull ozonru/file.d:latest-linux-amd64
+	sudo docker pull elasticsearch:7.17.6
+	sudo docker pull graylog/graylog:4.3
+	sudo docker pull jaegertracing/all-in-one:1.18

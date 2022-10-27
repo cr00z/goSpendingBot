@@ -6,7 +6,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"sort"
 	"strings"
@@ -15,6 +14,7 @@ import (
 
 	"github.com/shopspring/decimal"
 	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/currency"
+	"go.uber.org/zap"
 	"golang.org/x/text/encoding/ianaindex"
 )
 
@@ -74,7 +74,9 @@ type CbrCurrencyStorage struct {
 	currencies map[string]decimal.Decimal
 }
 
-func NewCbrCurrencyStorage(ctx context.Context, wg *sync.WaitGroup) (*CbrCurrencyStorage, error) {
+func NewCbrCurrencyStorage(ctx context.Context,
+	wg *sync.WaitGroup, logger *zap.Logger) (*CbrCurrencyStorage, error) {
+
 	wg.Add(1)
 	defer wg.Done()
 
@@ -96,13 +98,16 @@ func NewCbrCurrencyStorage(ctx context.Context, wg *sync.WaitGroup) (*CbrCurrenc
 			case <-timer.C:
 				vc, err = getValCursFromCBR()
 				if err != nil {
-					log.Println("currency storage temporary failed: ", err)
+					logger.Warn(
+						"currency storage temporary failed",
+						zap.Error(err),
+					)
 				} else {
 					cbr.valCursToCbrCurrencyStorage(vc)
-					log.Println("currencies updated")
+					logger.Info("currencies updated")
 				}
 			case <-ctx.Done():
-				log.Println("shutdown currency thread")
+				logger.Info("shutdown currency thread")
 				exit = true
 			}
 		}

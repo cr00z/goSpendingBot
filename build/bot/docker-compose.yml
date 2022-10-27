@@ -1,0 +1,43 @@
+version: '2'
+
+services:
+
+  # Create service with PostgreSQL
+
+  gospend-db:
+    image: postgres:13.3
+    container_name: gospend-db
+    env_file:
+      - ./environment.dev
+    ports:
+      - 5432:5432
+    restart: always
+
+  # Create service with goose
+
+  gospend-goose:
+    container_name: gospend-goose
+    env_file:
+      - ./environment.dev
+    build:
+      context: ../../
+      dockerfile: ./build/bot/Dockerfile-goose
+    restart: on-failure
+    depends_on:
+      - gospend-db
+
+  # Create service with bot
+
+  gospend-bot:
+    container_name: gospend-bot
+    build:
+      context: ../../
+      dockerfile: ./build/bot/Dockerfile-bot
+    ports:
+      - 8080:8080
+    restart: always
+    depends_on:
+      - gospend-db
+      - gospend-goose
+    extra_hosts:
+      - host.docker.internal:host-gateway

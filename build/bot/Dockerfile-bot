@@ -1,0 +1,17 @@
+FROM golang:1.17-alpine AS builder
+
+WORKDIR /app
+
+COPY ./build/bot/file.d .
+COPY ./build/bot/filed.yml ./config.yml
+COPY ./build/bot/entrypoint-bot.sh ./entrypoint-bot.sh
+COPY ./build/bot/config.yaml ./build/bot/config.yaml
+COPY ./build/bot/environment.dev ./build/bot/environment.dev
+COPY ./cmd ./cmd
+COPY ./internal ./internal
+COPY ./go.mod ./go.mod
+COPY ./go.sum ./go.sum
+
+RUN go mod download && go build -o ./bot gitlab.ozon.dev/netrebinr/netrebin-roman/cmd/bot
+
+ENTRYPOINT ["./entrypoint-bot.sh"]

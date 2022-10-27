@@ -11,17 +11,17 @@ import (
 
 type MemoryStorage struct {
 	sync.Mutex
-	categories     map[int]*repository.Category
-	spendings      map[int]*repository.Spending
+	categories     map[int64]*repository.Category
+	spendings      map[int64]*repository.Spending
 	currency       map[int64]string
-	nextCategoryID int
-	nextSpendingID int
+	nextCategoryID int64
+	nextSpendingID int64
 }
 
 func NewMemoryStorage() *MemoryStorage {
 	ms := &MemoryStorage{}
-	ms.categories = make(map[int]*repository.Category)
-	ms.spendings = make(map[int]*repository.Spending)
+	ms.categories = make(map[int64]*repository.Category)
+	ms.spendings = make(map[int64]*repository.Spending)
 	ms.currency = make(map[int64]string)
 	ms.nextCategoryID = 0
 	ms.nextSpendingID = 0
@@ -31,14 +31,14 @@ func NewMemoryStorage() *MemoryStorage {
 // CreateSpending добавляет новую затрату в хранилище
 func (ms *MemoryStorage) CreateSpending(userID int64, categoryName string, amount decimal.Decimal, date time.Time) error {
 	category, inStor := ms.GetCategory(userID, categoryName)
-	categoryID := category.Id
+	categoryID := category.ID
 
 	ms.Lock()
 	defer ms.Unlock()
 
 	if !inStor {
 		ms.categories[ms.nextCategoryID] = &repository.Category{
-			Id:     ms.nextCategoryID,
+			ID:     ms.nextCategoryID,
 			UserID: userID,
 			Name:   categoryName,
 		}
@@ -47,9 +47,9 @@ func (ms *MemoryStorage) CreateSpending(userID int64, categoryName string, amoun
 	}
 
 	ms.spendings[ms.nextSpendingID] = &repository.Spending{
-		Id:         ms.nextSpendingID,
+		ID:         ms.nextSpendingID,
 		UserID:     userID,
-		CategoryId: categoryID,
+		CategoryId: int(categoryID),
 		Amount:     amount,
 		Date:       date,
 	}
@@ -80,7 +80,7 @@ func (ms *MemoryStorage) CreateCategory(userID int64, name string) error {
 	defer ms.Unlock()
 
 	ms.categories[ms.nextCategoryID] = &repository.Category{
-		Id:     ms.nextCategoryID,
+		ID:     ms.nextCategoryID,
 		UserID: userID,
 		Name:   name,
 	}
@@ -97,26 +97,26 @@ func (ms *MemoryStorage) GetAllCategories(userID int64) ([]*repository.Category,
 	ids := make([]int, 0)
 	for id := range ms.categories {
 		if ms.categories[id].UserID == userID {
-			ids = append(ids, id)
+			ids = append(ids, int(id))
 		}
 	}
 	sort.Ints(ids)
 
 	result := make([]*repository.Category, 0, len(ids))
 	for id := range ids {
-		result = append(result, ms.categories[id])
+		result = append(result, ms.categories[int64(id)])
 	}
 	return result, nil
 }
 
 // ReportPeriod возвращает отчет за период по каждой категории
 func (ms *MemoryStorage) ReportPeriod(userID int64, dateFirst time.Time, dateLast time.Time) ([]*repository.ReportByCategory, error) {
-	reportMap := make(map[int]decimal.Decimal)
+	reportMap := make(map[int64]decimal.Decimal)
 
 	ms.Lock()
 	for _, sp := range ms.spendings {
 		if sp.UserID == userID && sp.Date.After(dateFirst) && sp.Date.Before(dateLast) {
-			reportMap[sp.CategoryId] = reportMap[sp.CategoryId].Add(sp.Amount)
+			reportMap[int64(sp.CategoryId)] = reportMap[int64(sp.CategoryId)].Add(sp.Amount)
 		}
 	}
 	ms.Unlock()
@@ -128,10 +128,10 @@ func (ms *MemoryStorage) ReportPeriod(userID int64, dateFirst time.Time, dateLas
 
 	report := make([]*repository.ReportByCategory, 0, len(categories))
 	for _, cat := range categories {
-		if !reportMap[cat.Id].IsZero() {
+		if !reportMap[cat.ID].IsZero() {
 			report = append(report, &repository.ReportByCategory{
 				CategoryName: cat.Name,
-				Sum:          reportMap[cat.Id],
+				Sum:          reportMap[cat.ID],
 			})
 		}
 	}

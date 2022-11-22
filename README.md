@@ -13,8 +13,8 @@
 * [Пояснения к седьмому заданию](README7.md)
 
 <tr>
-    <td> <img src="https://gitlab.ozon.dev/netrebinr/netrebin-roman/-/raw/master/images/screenshot1.jpeg" alt="Demo" style="width: 250px;"/> </td>
-    <td> <img src="https://gitlab.ozon.dev/netrebinr/netrebin-roman/-/raw/master/images/screenshot2.jpeg" alt="Demo" style="width: 250px;"/> </td>
+    <td> <img src="https://raw.githubusercontent.com/cr00z/goSpendingBot/main/images/screenshot1.jpeg" alt="Demo" style="width: 250px;"/> </td>
+    <td> <img src="https://raw.githubusercontent.com/cr00z/goSpendingBot/main/images/screenshot2.jpeg" alt="Demo" style="width: 250px;"/> </td>
 </tr>
 
 ## Основные команды

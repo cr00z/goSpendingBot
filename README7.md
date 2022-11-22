@@ -1,5 +1,5 @@
 # Кaфка и gRPC
 
-![screen](https://gitlab.ozon.dev/netrebinr/netrebin-roman/-/raw/kafka-grpc/GOHW-7/images/screenshot3.png)
+![screen](https://raw.githubusercontent.com/cr00z/goSpendingBot/main/images/screenshot3.png)
 
-![screen](https://gitlab.ozon.dev/netrebinr/netrebin-roman/-/raw/kafka-grpc/GOHW-7/images/screenshot4.jpeg)
+![screen](https://raw.githubusercontent.com/cr00z/goSpendingBot/main/images/screenshot4.jpeg)

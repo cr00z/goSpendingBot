@@ -15,5 +15,7 @@ services:
       - 3000:3000
     volumes:
       - ./data:/var/lib/grafana
+    #  - ./grafana.yml:/etc/grafana/provisioning/dashboards/local.yml
+    #  - ./grafana.json:/var/lib/grafana/dashboards/grafana.json
     links:
       - prometheus

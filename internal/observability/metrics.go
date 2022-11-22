@@ -28,6 +28,41 @@ var (
 		},
 		[]string{"command"},
 	)
+	HistogramTgapiTimeVec = promauto.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: "ozon",
+			Subsystem: "telegram",
+			Name:      "histogram_tgapi_time_vec_seconds",
+			Buckets:   []float64{0.1, 0.3, 0.5, 1},
+		},
+		[]string{"result"},
+	)
+
+	// cache metrics
+	CacheKeyCountVec = promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: "ozon",
+			Subsystem: "telegram",
+			Name:      "cache_key_count_total",
+		},
+		[]string{"cache_name"},
+	)
+	CacheEvictionCountVec = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: "ozon",
+			Subsystem: "telegram",
+			Name:      "cache_eviction_count_total",
+		},
+		[]string{"cache_name"},
+	)
+	CacheHitCountVec = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: "ozon",
+			Subsystem: "telegram",
+			Name:      "cache_hit_count_total",
+		},
+		[]string{"cache_name"},
+	)
 )
 
 type MetricsServer struct {

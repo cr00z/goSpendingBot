@@ -2,19 +2,19 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"flag"
-	"fmt"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/cache/cache_lru"
 	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/clients/tg"
 	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/config"
 	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/currency/cbrcurrency"
+	grpc_report "gitlab.ozon.dev/netrebinr/netrebin-roman/internal/grpc/report/server"
+	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/kafka/producers"
 	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/model/messages"
 	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/observability"
 	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/repository/postgres_sql"
@@ -23,14 +23,19 @@ import (
 
 var (
 	develMode = flag.Bool("devel", false, "development mode")
+
+	KafkaTopic  = "report-requests"
+	BrokersList = []string{"kafka:9092"}
 )
 
 func main() {
-	flag.Parse()
-	logger := observability.InitLogger(*develMode)
-
 	ctx, cancelFn := context.WithCancel(context.Background())
 	var wg sync.WaitGroup
+	flag.Parse()
+
+	logger := observability.InitLogger(*develMode)
+
+	observability.InitTracing(logger)
 
 	config, err := config.New()
 	if err != nil {
@@ -45,25 +50,14 @@ func main() {
 		logger.Fatal("tg client init failed: ", zap.Error(err))
 	}
 
-	if err := godotenv.Load("build/bot/environment.dev"); err != nil {
-		logger.Fatal("error loading env variables: ", zap.Error(err))
-	}
-	dsn := fmt.Sprintf("host=%s port=5432 user=%s password=%s sslmode=%s",
-		os.Getenv("POSTGRES_HOST"),
-		// "localhost",
-		os.Getenv("POSTGRES_USER"),
-		os.Getenv("POSTGRES_PASSWORD"),
-		os.Getenv("POSTGRES_SSLMODE"),
-	)
-	db, err := sql.Open("postgres", dsn)
+	db, err := postgres_sql.OpenAndConnect("build/bot/environment.dev")
 	if err != nil {
-		logger.Fatal("db connect failed: ", zap.Error(err))
+		logger.Fatal(err.Error())
 	}
-	if err = db.Ping(); err != nil {
-		logger.Fatal("db connect failed: ", zap.Error(err))
-	}
-
 	spRepository := postgres_sql.New(db)
+
+	currencyCache := cache_lru.NewLRUCache("currency", config.CurrencyCacheSize())
+	reportCache := cache_lru.NewLRUCache("report", config.ReportCacheSize())
 
 	cbrCurrency, err := cbrcurrency.NewCbrCurrencyStorage(ctx, &wg, logger)
 	if err != nil {
@@ -73,7 +67,22 @@ func main() {
 		)
 	}
 
-	msgModel := messages.New(tgClient, spRepository, cbrCurrency)
+	reportService, err := producer.New(producer.ProducerOptions{
+		KafkaTopic:  KafkaTopic,
+		BrokersList: BrokersList,
+	})
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
+
+	msgModel := messages.New(tgClient, spRepository, currencyCache, reportCache, cbrCurrency, reportService)
+
+	go func() {
+		err = grpc_report.NewServer(msgModel, tgClient)
+		if err != nil {
+			logger.Fatal(err.Error())
+		}
+	}()
 
 	go tgClient.ListenUpdates(ctx, &wg, msgModel)
 

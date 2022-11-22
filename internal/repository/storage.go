@@ -19,7 +19,7 @@ type Storager interface {
 	CreateSpending(ctx context.Context, userID int64, categoryName string, amount decimal.Decimal, date time.Time) error
 	CreateCategory(ctx context.Context, userID int64, name string) error
 	GetAllCategories(ctx context.Context, userID int64) ([]*Category, error)
-	ReportPeriod(ctx context.Context, userID int64, dateFirst time.Time, dateLast time.Time) ([]*ReportByCategory, error)
+	ReportPeriod(ctx context.Context, userID int64, dateFirst time.Time, dateLast time.Time) (*Report, error)
 	GetActiveCurrency(ctx context.Context, userID int64) (string, error)
 	SetActiveCurrency(ctx context.Context, userID int64, curr string) error
 	GetLimit(ctx context.Context, userID int64) (decimal.Decimal, error)
@@ -48,6 +48,11 @@ type Spending struct {
 type ReportByCategory struct {
 	CategoryName string
 	Sum          decimal.Decimal
+}
+
+type Report struct {
+	ReportByCategory []*ReportByCategory
+	MinDate          time.Time
 }
 
 type Currency struct {

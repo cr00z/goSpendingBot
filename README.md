@@ -9,10 +9,12 @@
 * [Пояснение к третьему заданию](README3.md)
 * [Пояснение к четвертому заданию](README4.md)
 * [Пояснения к пятому заданию](README5.md)
+* [Пояснения к шестому заданию](README6.md)
+* [Пояснения к седьмому заданию](README7.md)
 
 <tr>
-    <td> <img src="images/screenshot1.jpg" alt="Demo" style="width: 350px;"/> </td>
-    <td> <img src="images/screenshot2.jpg" alt="Demo" style="width: 350px;"/> </td>
+    <td> <img src="https://gitlab.ozon.dev/netrebinr/netrebin-roman/-/raw/master/images/screenshot1.jpeg" alt="Demo" style="width: 250px;"/> </td>
+    <td> <img src="https://gitlab.ozon.dev/netrebinr/netrebin-roman/-/raw/master/images/screenshot2.jpeg" alt="Demo" style="width: 250px;"/> </td>
 </tr>
 
 ## Основные команды

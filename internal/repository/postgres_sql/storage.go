@@ -4,12 +4,37 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"os"
 	"time"
 
+	"github.com/joho/godotenv"
+	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/ext"
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/repository"
 )
+
+func OpenAndConnect(envFile string) (*sql.DB, error) {
+	if err := godotenv.Load(envFile); err != nil {
+		return nil, errors.Wrap(err, "error loading env variables")
+	}
+	dsn := fmt.Sprintf("host=%s port=5432 user=%s password=%s sslmode=%s",
+		os.Getenv("POSTGRES_HOST"),
+		// "localhost",
+		os.Getenv("POSTGRES_USER"),
+		os.Getenv("POSTGRES_PASSWORD"),
+		os.Getenv("POSTGRES_SSLMODE"),
+	)
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		return nil, errors.Wrap(err, "db connect failed")
+	}
+	if err = db.Ping(); err != nil {
+		return nil, errors.Wrap(err, "db connect failed")
+	}
+	return db, nil
+}
 
 type PostgresStorage struct {
 	db *sql.DB
@@ -19,20 +44,28 @@ func New(db *sql.DB) *PostgresStorage {
 	return &PostgresStorage{db}
 }
 
+func setErrorSpanAndReturnError(span opentracing.Span, err error) error {
+	ext.Error.Set(span, err != nil)
+	return err
+}
+
 // CreateSpending добавляет новую затрату в хранилище
 func (ps *PostgresStorage) CreateSpending(ctx context.Context,
 	userID int64, categoryName string, amount decimal.Decimal, date time.Time) error {
 
+	span, ctx := opentracing.StartSpanFromContext(ctx, "CreateSpending")
+	defer span.Finish()
+
 	category, inStor, err := ps.GetCategory(ctx, userID, categoryName)
 	if err != nil {
-		return err
+		return setErrorSpanAndReturnError(span, err)
 	}
 
 	var categoryID int64
 
 	tx, err := ps.db.Begin()
 	if err != nil {
-		return err
+		return setErrorSpanAndReturnError(span, err)
 	}
 
 	if inStor {
@@ -55,9 +88,9 @@ func (ps *PostgresStorage) CreateSpending(ctx context.Context,
 		err := row.Scan(&categoryID)
 		if err != nil {
 			if tx.Rollback() != nil {
-				return fmt.Errorf("%w, tx.Rollback() failed", err)
+				err = fmt.Errorf("%w, tx.Rollback() failed", err)
 			}
-			return err
+			return setErrorSpanAndReturnError(span, err)
 		}
 	}
 
@@ -75,9 +108,9 @@ func (ps *PostgresStorage) CreateSpending(ctx context.Context,
 			unlimit = true
 		} else {
 			if tx.Rollback() != nil {
-				return fmt.Errorf("%w, tx.Rollback() failed", err)
+				err = fmt.Errorf("%w, tx.Rollback() failed", err)
 			}
-			return err
+			return setErrorSpanAndReturnError(span, err)
 		}
 	}
 
@@ -103,16 +136,16 @@ func (ps *PostgresStorage) CreateSpending(ctx context.Context,
 		if err != nil {
 			if err != sql.ErrNoRows {
 				if tx.Rollback() != nil {
-					return fmt.Errorf("%w, tx.Rollback() failed", err)
+					err = fmt.Errorf("%w, tx.Rollback() failed", err)
 				}
-				return err
+				return setErrorSpanAndReturnError(span, err)
 			}
 		}
 		if limit.LessThan(summ.Add(amount)) {
 			if tx.Rollback() != nil {
-				return errors.Wrap(repository.ErrLimitExceeded, "tx.Rollback() failed")
+				err = errors.Wrap(repository.ErrLimitExceeded, "tx.Rollback() failed")
 			}
-			return repository.ErrLimitExceeded
+			return setErrorSpanAndReturnError(span, err)
 		}
 	}
 
@@ -136,15 +169,20 @@ func (ps *PostgresStorage) CreateSpending(ctx context.Context,
 	)
 	if err != nil {
 		if tx.Rollback() != nil {
-			return fmt.Errorf("%w, tx.Rollback() failed", err)
+			err = fmt.Errorf("%w, tx.Rollback() failed", err)
 		}
-		return err
+		return setErrorSpanAndReturnError(span, err)
 	}
 
-	return tx.Commit()
+	return setErrorSpanAndReturnError(span, tx.Commit())
 }
 
-func (ps *PostgresStorage) GetCategory(ctx context.Context, userID int64, name string) (*repository.Category, bool, error) {
+func (ps *PostgresStorage) GetCategory(ctx context.Context,
+	userID int64, name string) (*repository.Category, bool, error) {
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GetCategory")
+	defer span.Finish()
+
 	const query = `
 		SELECT id FROM categories
 		WHERE user_id = $1 AND name = $2;
@@ -159,19 +197,24 @@ func (ps *PostgresStorage) GetCategory(ctx context.Context, userID int64, name s
 		if err == sql.ErrNoRows {
 			err = nil
 		}
-		return nil, false, err
+		return nil, false, setErrorSpanAndReturnError(span, err)
 	}
 
 	return &cat, true, nil
 }
 
-func (ps *PostgresStorage) CreateCategory(ctx context.Context, userID int64, name string) error {
+func (ps *PostgresStorage) CreateCategory(ctx context.Context,
+	userID int64, name string) error {
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "CreateCategory")
+	defer span.Finish()
+
 	_, inStor, err := ps.GetCategory(ctx, userID, name)
 	if err != nil {
-		return err
+		return setErrorSpanAndReturnError(span, err)
 	}
 	if inStor {
-		return repository.ErrCategoryExists
+		return setErrorSpanAndReturnError(span, repository.ErrCategoryExists)
 	}
 
 	const query = `
@@ -188,11 +231,16 @@ func (ps *PostgresStorage) CreateCategory(ctx context.Context, userID int64, nam
 		userID,
 		name,
 	)
-	return err
+	return setErrorSpanAndReturnError(span, err)
 }
 
 // GetAllCategories возвращает из хранилища все категории
-func (ps *PostgresStorage) GetAllCategories(ctx context.Context, userID int64) ([]*repository.Category, error) {
+func (ps *PostgresStorage) GetAllCategories(ctx context.Context,
+	userID int64) ([]*repository.Category, error) {
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GetAllCategories")
+	defer span.Finish()
+
 	const query = `
 		SELECT id, user_id, name, created_at, updated_at
 		FROM categories
@@ -201,7 +249,7 @@ func (ps *PostgresStorage) GetAllCategories(ctx context.Context, userID int64) (
 	`
 	rows, err := ps.db.QueryContext(ctx, query, userID)
 	if err != nil {
-		return nil, err
+		return nil, setErrorSpanAndReturnError(span, err)
 	}
 	defer rows.Close()
 
@@ -216,7 +264,7 @@ func (ps *PostgresStorage) GetAllCategories(ctx context.Context, userID int64) (
 			&cat.UpdatedAt,
 		)
 		if err != nil {
-			return nil, err
+			return nil, setErrorSpanAndReturnError(span, err)
 		}
 		categories = append(categories, &cat)
 	}
@@ -226,11 +274,13 @@ func (ps *PostgresStorage) GetAllCategories(ctx context.Context, userID int64) (
 
 // ReportPeriod возвращает отчет за период по каждой категории
 func (ps *PostgresStorage) ReportPeriod(ctx context.Context,
-	userID int64, dateFirst time.Time, dateLast time.Time) (
-	[]*repository.ReportByCategory, error) {
+	userID int64, dateFirst time.Time, dateLast time.Time) (*repository.Report, error) {
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ReportPeriod")
+	defer span.Finish()
 
 	const query = `
-		SELECT SUM(sp.amount), cat.name
+		SELECT MIN(sp.date), SUM(sp.amount), cat.name
 		FROM spendings sp, categories cat
 		WHERE sp.category_id = cat.id AND
 		 	  sp.user_id = $1 AND
@@ -245,37 +295,51 @@ func (ps *PostgresStorage) ReportPeriod(ctx context.Context,
 		dateLast,
 	)
 	if err != nil {
-		return nil, err
+		return nil, setErrorSpanAndReturnError(span, err)
 	}
 	defer rows.Close()
 
-	report := make([]*repository.ReportByCategory, 0)
+	report := repository.Report{
+		ReportByCategory: make([]*repository.ReportByCategory, 0),
+		MinDate:          time.Now(),
+	}
 	for rows.Next() {
 		var amount decimal.Decimal
 		var name string
+		var minDate time.Time
 		err := rows.Scan(
+			&minDate,
 			&amount,
 			&name,
 		)
 		if err != nil {
-			return nil, err
+			return nil, setErrorSpanAndReturnError(span, err)
 		}
-		report = append(report, &repository.ReportByCategory{
-			CategoryName: name,
-			Sum:          amount,
-		})
+		fmt.Println(minDate)
+		report.ReportByCategory = append(report.ReportByCategory,
+			&repository.ReportByCategory{
+				CategoryName: name,
+				Sum:          amount,
+			},
+		)
+		if minDate.Before(report.MinDate) {
+			report.MinDate = minDate
+		}
 	}
 
-	return report, nil
+	return &report, nil
 }
 
 // GetActiveCurrency возвращает используемую юзером валюту
 func (ps *PostgresStorage) GetActiveCurrency(ctx context.Context,
 	userID int64) (string, error) {
 
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GetActiveCurrency")
+	defer span.Finish()
+
 	tx, err := ps.db.Begin()
 	if err != nil {
-		return "", err
+		return "", setErrorSpanAndReturnError(span, err)
 	}
 
 	const query = `
@@ -287,7 +351,7 @@ func (ps *PostgresStorage) GetActiveCurrency(ctx context.Context,
 	row := tx.QueryRowContext(ctx, query, userID)
 	err = row.Scan(&currCharCode)
 	if err == nil {
-		return currCharCode, tx.Commit()
+		return currCharCode, setErrorSpanAndReturnError(span, tx.Commit())
 	}
 	if err == sql.ErrNoRows {
 		const query = `
@@ -303,17 +367,22 @@ func (ps *PostgresStorage) GetActiveCurrency(ctx context.Context,
 			userID,
 		)
 		if err == nil {
-			return "RUB", tx.Commit()
+			return "RUB", setErrorSpanAndReturnError(span, tx.Commit())
 		}
 	}
 	if tx.Rollback() != nil {
-		return "", fmt.Errorf("%w, tx.Rollback() failed", err)
+		err = fmt.Errorf("%w, tx.Rollback() failed", err)
 	}
-	return "", err
+	return "", setErrorSpanAndReturnError(span, err)
 }
 
 // SetActiveCurrency устанавливает используемую юзером валюту
-func (ps *PostgresStorage) SetActiveCurrency(ctx context.Context, userID int64, currCharCode string) error {
+func (ps *PostgresStorage) SetActiveCurrency(ctx context.Context,
+	userID int64, currCharCode string) error {
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "SetActiveCurrency")
+	defer span.Finish()
+
 	const query = `
 		INSERT INTO currencies(
 			user_id,
@@ -330,11 +399,16 @@ func (ps *PostgresStorage) SetActiveCurrency(ctx context.Context, userID int64, 
 		userID,
 		currCharCode,
 	)
-	return err
+	return setErrorSpanAndReturnError(span, err)
 }
 
 // GetLimit возвращает лимит трат в месяц
-func (ps *PostgresStorage) GetLimit(ctx context.Context, userID int64) (decimal.Decimal, error) {
+func (ps *PostgresStorage) GetLimit(ctx context.Context,
+	userID int64) (decimal.Decimal, error) {
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GetLimit")
+	defer span.Finish()
+
 	const query = `
 		SELECT amount
 		FROM limits
@@ -345,9 +419,9 @@ func (ps *PostgresStorage) GetLimit(ctx context.Context, userID int64) (decimal.
 	err := row.Scan(&limit)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return limit, repository.ErrLimitNotSet
+			return limit, setErrorSpanAndReturnError(span, repository.ErrLimitNotSet)
 		} else {
-			return limit, err
+			return limit, setErrorSpanAndReturnError(span, err)
 		}
 	}
 
@@ -355,7 +429,12 @@ func (ps *PostgresStorage) GetLimit(ctx context.Context, userID int64) (decimal.
 }
 
 // SetLimit устанавливает лимит трат в месяц
-func (ps *PostgresStorage) SetLimit(ctx context.Context, userID int64, amount decimal.Decimal) error {
+func (ps *PostgresStorage) SetLimit(ctx context.Context,
+	userID int64, amount decimal.Decimal) error {
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "SetLimit")
+	defer span.Finish()
+
 	const query = `
 	INSERT INTO limits(
 		user_id,
@@ -372,15 +451,18 @@ func (ps *PostgresStorage) SetLimit(ctx context.Context, userID int64, amount de
 		userID,
 		amount,
 	)
-	return err
+	return setErrorSpanAndReturnError(span, err)
 }
 
 // DropLimit устанавливает неограниченный лимит трат в месяц
 func (ps *PostgresStorage) DropLimit(ctx context.Context, userID int64) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "DropLimit")
+	defer span.Finish()
+
 	const query = `
 		DELETE FROM limits
 		WHERE user_id = $1;
 	`
 	_, err := ps.db.ExecContext(ctx, query, userID)
-	return err
+	return setErrorSpanAndReturnError(span, err)
 }

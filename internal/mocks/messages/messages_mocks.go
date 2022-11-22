@@ -5,6 +5,7 @@
 package mock_messages
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -34,15 +35,15 @@ func (m *MockMessageSender) EXPECT() *MockMessageSenderMockRecorder {
 }
 
 // SendMessage mocks base method.
-func (m *MockMessageSender) SendMessage(text string, userID int64) error {
+func (m *MockMessageSender) SendMessage(ctx context.Context, text string, userID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SendMessage", text, userID)
+	ret := m.ctrl.Call(m, "SendMessage", ctx, text, userID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SendMessage indicates an expected call of SendMessage.
-func (mr *MockMessageSenderMockRecorder) SendMessage(text, userID interface{}) *gomock.Call {
+func (mr *MockMessageSenderMockRecorder) SendMessage(ctx, text, userID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendMessage", reflect.TypeOf((*MockMessageSender)(nil).SendMessage), text, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendMessage", reflect.TypeOf((*MockMessageSender)(nil).SendMessage), ctx, text, userID)
 }

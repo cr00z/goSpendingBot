@@ -5,6 +5,8 @@ import (
 	"sync"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/ext"
 	"github.com/pkg/errors"
 	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/model/messages"
 	"go.uber.org/zap"
@@ -31,10 +33,16 @@ func New(tokenGetter TokenGetter, logger *zap.Logger) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) SendMessage(text string, userID int64) error {
+func (c *Client) SendMessage(ctx context.Context, text string, userID int64) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "send message")
+	defer span.Finish()
+
 	msg := tgbotapi.NewMessage(userID, text)
 	msg.ParseMode = "markdown"
 	_, err := c.client.Send(msg)
+
+	ext.Error.Set(span, err != nil)
+
 	if err != nil {
 		return errors.Wrap(err, "client.Send")
 	}

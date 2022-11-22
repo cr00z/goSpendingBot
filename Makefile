@@ -18,6 +18,9 @@ test:
 run:
 	go run ${PACKAGE}
 
+runrs:
+	go run gitlab.ozon.dev/netrebinr/netrebin-roman/cmd/report_service
+
 generate: install-mockgen
 	${MOCKGEN} -source=internal/model/messages/incoming_msg.go -destination=internal/mocks/messages/messages_mocks.go
 
@@ -57,23 +60,23 @@ bot:
 .PHONY: logs
 logs:
 	mkdir -p build/logs/data
-	chmod -R 777 build/logs/data
-	cd build/logs && docker compose up
-	# sudo chmod -R 777 build/logs/data
-	# cd build/logs && sudo docker compose up
+	# chmod -R 777 build/logs/data
+	# cd build/logs && docker compose up
+	sudo chmod -R 777 build/logs/data
+	cd build/logs && sudo docker compose up
 
 .PHONY: tracing
 tracing:
-	cd build/tracing && docker compose up
-	# cd build/tracing && sudo docker compose up
+	# cd build/tracing && docker compose up
+	cd build/tracing && sudo docker compose up
 
 .PHONY: metrics
 metrics:
 	mkdir -p build/metrics/data
-	chmod -R 777 build/metrics/data
-	cd build/metrics && docker compose up
-	# sudo chmod -R 777 build/metrics/data
-	# cd build/metrics && sudo docker compose up
+	# chmod -R 777 build/metrics/data
+	# cd build/metrics && docker compose up
+	sudo chmod -R 777 build/metrics/data
+	cd build/metrics && sudo docker compose up
 
 pull:
 	sudo docker pull prom/prometheus

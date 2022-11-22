@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+option go_package = "gitlab.ozon.dev/netrebinr/netrebin-roman/internal/grpc/report/api";
+
+package report;
+
+service ReportCollector {
+  rpc ReceiveReport (ReportBody) returns (ReportAccept) {}
+}
+
+message ReportBody {
+  message ReportByCategory {
+    string category_name = 1;
+	string sum = 2;     
+  }
+  int64 user_id = 1;
+  string period = 2;
+  repeated ReportByCategory repcat = 3;
+  int64 min_date = 4;
+}
+
+// The response message containing the greetings
+message ReportAccept {
+  string answer = 1;
+}

@@ -7,12 +7,12 @@ import (
 	"os"
 	"time"
 
+	"github.com/cr00z/goSpendingBot/internal/repository"
 	"github.com/joho/godotenv"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
-	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/repository"
 )
 
 func OpenAndConnect(envFile string) (*sql.DB, error) {

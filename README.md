@@ -6,11 +6,11 @@
 
 > В процессе разработки
 
-* [Пояснение к третьему заданию](README3.md)
-* [Пояснение к четвертому заданию](README4.md)
-* [Пояснения к пятому заданию](README5.md)
-* [Пояснения к шестому заданию](README6.md)
-* [Пояснения к седьмому заданию](README7.md)
+* [Пояснение к третьему заданию](homeworks/README3.md)
+* [Пояснение к четвертому заданию](homeworks/README4.md)
+* [Пояснения к пятому заданию](homeworks/README5.md)
+* [Пояснения к шестому заданию](homeworks/README6.md)
+* [Пояснения к седьмому заданию](homeworks/README7.md)
 
 <tr>
     <td> <img src="https://raw.githubusercontent.com/cr00z/goSpendingBot/main/images/screenshot1.jpeg" alt="Demo" style="width: 250px;"/> </td>

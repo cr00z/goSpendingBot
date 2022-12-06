@@ -4,8 +4,8 @@ import (
 	"errors"
 	"time"
 
+	"github.com/cr00z/goSpendingBot/internal/repository"
 	"github.com/shopspring/decimal"
-	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/repository"
 	"gorm.io/gorm"
 )
 

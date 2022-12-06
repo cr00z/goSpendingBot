@@ -5,9 +5,9 @@ import (
 	"log"
 	"time"
 
+	"github.com/cr00z/goSpendingBot/internal/grpc/report/api"
+	"github.com/cr00z/goSpendingBot/internal/repository"
 	"github.com/pkg/errors"
-	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/grpc/report/api"
-	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/repository"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

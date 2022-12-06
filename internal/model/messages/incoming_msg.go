@@ -7,14 +7,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cr00z/goSpendingBot/internal/cache"
+	"github.com/cr00z/goSpendingBot/internal/currency"
+	producer "github.com/cr00z/goSpendingBot/internal/kafka/producers"
+	"github.com/cr00z/goSpendingBot/internal/observability"
+	"github.com/cr00z/goSpendingBot/internal/repository"
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
-	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/cache"
-	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/currency"
-	producer "gitlab.ozon.dev/netrebinr/netrebin-roman/internal/kafka/producers"
-	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/observability"
-	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/repository"
 )
 
 var (

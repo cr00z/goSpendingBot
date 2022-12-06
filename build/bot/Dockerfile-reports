@@ -12,6 +12,6 @@ COPY ./internal ./internal
 COPY ./go.mod ./go.mod
 COPY ./go.sum ./go.sum
 
-RUN go mod download && go build -o ./report_service gitlab.ozon.dev/netrebinr/netrebin-roman/cmd/report_service
+RUN go mod download && go build -o ./report_service github.com/cr00z/goSpendingBot/cmd/report_service
 
 ENTRYPOINT ["./report_service"]

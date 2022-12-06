@@ -1,4 +1,4 @@
-module gitlab.ozon.dev/netrebinr/netrebin-roman
+module github.com/cr00z/goSpendingBot
 
 go 1.19
 

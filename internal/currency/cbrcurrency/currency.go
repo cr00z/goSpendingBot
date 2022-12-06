@@ -12,8 +12,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cr00z/goSpendingBot/internal/currency"
 	"github.com/shopspring/decimal"
-	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/currency"
 	"go.uber.org/zap"
 	"golang.org/x/text/encoding/ianaindex"
 )

@@ -6,11 +6,11 @@ import (
 	"os"
 	"os/signal"
 
+	consumer "github.com/cr00z/goSpendingBot/internal/kafka/consumers"
+	"github.com/cr00z/goSpendingBot/internal/observability"
+	"github.com/cr00z/goSpendingBot/internal/report_service/model"
+	"github.com/cr00z/goSpendingBot/internal/repository/postgres_sql"
 	_ "github.com/lib/pq"
-	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/kafka/consumers"
-	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/observability"
-	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/report_service/model"
-	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/repository/postgres_sql"
 )
 
 var (

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "gitlab.ozon.dev/netrebinr/netrebin-roman/internal/grpc/report/api";
+option go_package = "github.com/cr00z/goSpendingBot/internal/grpc/report/api";
 
 package report;
 

@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/cr00z/goSpendingBot/internal/repository/postgres_sql"
 	_ "github.com/lib/pq"
 	"github.com/shopspring/decimal"
-	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/repository/postgres_sql"
 )
 
 const (

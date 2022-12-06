@@ -6,11 +6,11 @@ import (
 	"net"
 	"time"
 
+	"github.com/cr00z/goSpendingBot/internal/grpc/report/api"
+	"github.com/cr00z/goSpendingBot/internal/model/messages"
+	"github.com/cr00z/goSpendingBot/internal/repository"
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
-	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/grpc/report/api"
-	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/model/messages"
-	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/repository"
 	"google.golang.org/grpc"
 )
 

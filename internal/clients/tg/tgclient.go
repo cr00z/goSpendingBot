@@ -4,11 +4,11 @@ import (
 	"context"
 	"sync"
 
+	"github.com/cr00z/goSpendingBot/internal/model/messages"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/pkg/errors"
-	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/model/messages"
 	"go.uber.org/zap"
 )
 

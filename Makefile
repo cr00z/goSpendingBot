@@ -5,7 +5,7 @@ MOCKGEN=${BINDIR}/mockgen_${GOVER}
 SMARTIMPORTS=${BINDIR}/smartimports_${GOVER}
 LINTVER=v1.49.0
 LINTBIN=${BINDIR}/lint_${GOVER}_${LINTVER}
-PACKAGE=gitlab.ozon.dev/netrebinr/netrebin-roman/cmd/bot
+PACKAGE=github.com/cr00z/goSpendingBot/cmd/bot
 
 all: format build test lint
 
@@ -19,7 +19,7 @@ run:
 	go run ${PACKAGE}
 
 runrs:
-	go run gitlab.ozon.dev/netrebinr/netrebin-roman/cmd/report_service
+	go run github.com/cr00z/goSpendingBot/cmd/report_service
 
 generate: install-mockgen
 	${MOCKGEN} -source=internal/model/messages/incoming_msg.go -destination=internal/mocks/messages/messages_mocks.go

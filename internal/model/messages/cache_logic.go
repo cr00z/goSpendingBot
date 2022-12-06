@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"time"
 
-	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/cache"
-	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/observability"
-	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/repository"
+	"github.com/cr00z/goSpendingBot/internal/cache"
+	"github.com/cr00z/goSpendingBot/internal/observability"
+	"github.com/cr00z/goSpendingBot/internal/repository"
 )
 
 // Запрос из кеша кода активной валюты

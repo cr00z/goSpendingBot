@@ -12,6 +12,6 @@ COPY ./internal ./internal
 COPY ./go.mod ./go.mod
 COPY ./go.sum ./go.sum
 
-RUN go mod download && go build -o ./bot gitlab.ozon.dev/netrebinr/netrebin-roman/cmd/bot
+RUN go mod download && go build -o ./bot github.com/cr00z/goSpendingBot/cmd/bot
 
 ENTRYPOINT ["./entrypoint-bot.sh"]

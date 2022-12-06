@@ -6,8 +6,8 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/cr00z/goSpendingBot/internal/cache"
 	"github.com/stretchr/testify/assert"
-	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/cache"
 )
 
 // вставка нового элемента в неполный кэш

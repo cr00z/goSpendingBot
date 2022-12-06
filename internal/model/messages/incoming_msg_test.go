@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
+	mocks "github.com/cr00z/goSpendingBot/internal/mocks/messages"
 	"github.com/golang/mock/gomock"
 	"github.com/opentracing/opentracing-go"
 	"github.com/stretchr/testify/assert"
-	mocks "gitlab.ozon.dev/netrebinr/netrebin-roman/internal/mocks/messages"
 )
 
 func Test_OnStartCommand_ShouldAnswerWithIntroMessage(t *testing.T) {

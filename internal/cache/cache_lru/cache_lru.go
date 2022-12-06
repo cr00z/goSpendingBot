@@ -4,7 +4,7 @@ import (
 	"container/list"
 	"sync"
 
-	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/cache"
+	"github.com/cr00z/goSpendingBot/internal/cache"
 )
 
 type LRUCache struct {

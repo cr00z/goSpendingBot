@@ -1,6 +1,6 @@
 package model
 
-import "gitlab.ozon.dev/netrebinr/netrebin-roman/internal/repository"
+import "github.com/cr00z/goSpendingBot/internal/repository"
 
 type ReportServiceModel struct {
 	Store repository.Storager

@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/Shopify/sarama"
+	grpc_report "github.com/cr00z/goSpendingBot/internal/grpc/report/client"
+	"github.com/cr00z/goSpendingBot/internal/report_service/model"
 	"github.com/pkg/errors"
-	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/grpc/report/client"
-	"gitlab.ozon.dev/netrebinr/netrebin-roman/internal/report_service/model"
 )
 
 type ConsumerOptions struct {
